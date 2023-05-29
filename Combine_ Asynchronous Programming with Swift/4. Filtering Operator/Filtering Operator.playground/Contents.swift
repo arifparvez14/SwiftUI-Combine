@@ -106,3 +106,72 @@ example(of: "drop(while:)") {
     .sink(receiveValue: { print($0) })
     .store(in: &subscriptions)
 }
+
+example(of: "drop(while:) condition") {
+  let numbers = (1...10).publisher
+  
+  numbers
+    .drop(while: {
+        print("x")
+        return $0 % 5 != 0
+    })
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+}
+
+example(of: "drop(untilOutputFrom:)") {
+    let isReady = PassthroughSubject<Void, Never>()
+    let taps = PassthroughSubject<Int, Never>()
+    
+    taps
+        .drop(untilOutputFrom: isReady)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    (1...5).forEach { n in
+        taps.send(n)
+        
+        if n == 3 {
+            isReady.send()
+        }
+    }
+}
+
+example(of: "prefix") {
+    let number = (1...10).publisher
+    
+    number
+        .prefix(2)
+        .sink(receiveCompletion: { print("Completed with: \($0)")},
+              receiveValue: { print($0)})
+        .store(in: &subscriptions)
+}
+
+example(of: "prefix(while:)") {
+    let number = (1...10).publisher
+    
+    number
+        .prefix(while: { $0 < 3 })
+        .sink(receiveCompletion: { print("Completed with: \($0)") },
+              receiveValue: { print($0)})
+        .store(in: &subscriptions)
+}
+
+example(of: "prefix(untilOutputFrom:)") {
+    let isReady = PassthroughSubject<Void, Never>()
+    let taps = PassthroughSubject<Int, Never>()
+    
+    taps
+        .prefix(untilOutputFrom: isReady)
+        .sink(receiveCompletion: { print("Completed with: \($0)") },
+              receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    (1...5).forEach { n in
+        taps.send(n)
+        
+        if n == 2 {
+            isReady.send()
+        }
+    }
+}
